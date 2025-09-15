@@ -1,0 +1,26 @@
+@startuml arquitetura
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' Se quiser usar ícones, descomente e ajuste:
+' !define ICONURL https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master
+
+title Arquitetura de Dados (E-Commerce)
+footer Disponivel em: https://github.com/yRodAlex/DadaPrep
+
+Person(Customer, "Cliente", "Usuário final que interage com a plataforma de e-commerce.")
+
+Container(pubsub, "Cloud Pub/Sub", "Sistema de mensagens assíncronas para comunicação entre serviços.")
+Container(dataflow, "Cloud Dataflow", "Processamento de dados em tempo real e em lote, Apache Beam.")
+
+Container_Boundary(Storage, "Lakehouse & DB") {
+    ContainerDb(gcs, "Cloud Storage", "Armazenamento de objetos escalável e durável para dados brutos e processados.")
+    ContainerDb(bq_bronze, "BigQuery Bronze", "Tabela Raw - Dados Imutáveis (Bronze)")
+}
+
+Rel(Customer, pubsub, "Gera eventos via HTTP")
+Rel(pubsub, dataflow, "Envia eventos para processamento")
+Rel(dataflow, gcs, "Dump arquivos brutos")
+Rel(dataflow, bq_bronze, "Carrega dados processados")
+
+@enduml
